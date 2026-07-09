@@ -4,9 +4,37 @@ import { errorHandler } from "../utils/error.js";
 
 const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
 
+const escapeRegex = (value = "") => {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+};
+
+const getAllowedListingFields = (body) => {
+  return {
+    name: body.name,
+    description: body.description,
+    address: body.address,
+    regularPrice: body.regularPrice,
+    discountPrice: body.discountPrice,
+    bathrooms: body.bathrooms,
+    bedrooms: body.bedrooms,
+    furnished: body.furnished,
+    parking: body.parking,
+    type: body.type,
+    offer: body.offer,
+    imageUrls: body.imageUrls,
+  };
+};
+
 export const createListing = async (req, res, next) => {
   try {
-    const listing = await Listing.create(req.body);
+    if (!req.user?.id) {
+      return next(errorHandler(401, "You must be signed in"));
+    }
+
+    const listing = await Listing.create({
+      ...getAllowedListingFields(req.body),
+      userRef: req.user.id,
+    });
 
     return res.status(201).json(listing);
   } catch (error) {
@@ -26,13 +54,13 @@ export const deleteListing = async (req, res, next) => {
       return next(errorHandler(404, "Listing not found"));
     }
 
-    if (req.user.id !== listing.userRef) {
+    if (req.user.id !== listing.userRef.toString()) {
       return next(errorHandler(403, "You can only delete your own listings"));
     }
 
     await Listing.findByIdAndDelete(req.params.id);
 
-    return res.status(200).json("Listing has been deleted!");
+    return res.status(200).json("Listing has been deleted");
   } catch (error) {
     next(error);
   }
@@ -50,18 +78,20 @@ export const updateListing = async (req, res, next) => {
       return next(errorHandler(404, "Listing not found"));
     }
 
-    if (req.user.id !== listing.userRef) {
+    if (req.user.id !== listing.userRef.toString()) {
       return next(errorHandler(403, "You can only update your own listings"));
     }
 
     const updatedListing = await Listing.findByIdAndUpdate(
       req.params.id,
-      req.body,
+      {
+        $set: getAllowedListingFields(req.body),
+      },
       {
         new: true,
         runValidators: true,
       }
-    );
+    ).select("-__v");
 
     return res.status(200).json(updatedListing);
   } catch (error) {
@@ -75,7 +105,7 @@ export const getListing = async (req, res, next) => {
   }
 
   try {
-    const listing = await Listing.findById(req.params.id);
+    const listing = await Listing.findById(req.params.id).select("-__v").lean();
 
     if (!listing) {
       return next(errorHandler(404, "Listing not found"));
@@ -89,41 +119,43 @@ export const getListing = async (req, res, next) => {
 
 export const getListings = async (req, res, next) => {
   try {
-    const limit = parseInt(req.query.limit, 10) || 9;
+    const limit = Math.min(parseInt(req.query.limit, 10) || 9, 20);
     const startIndex = parseInt(req.query.startIndex, 10) || 0;
 
-    let offer = req.query.offer;
-    if (offer === undefined || offer === "false") {
-      offer = { $in: [false, true] };
+    const query = {};
+
+    if (req.query.searchTerm) {
+      query.name = {
+        $regex: escapeRegex(req.query.searchTerm),
+        $options: "i",
+      };
     }
 
-    let furnished = req.query.furnished;
-    if (furnished === undefined || furnished === "false") {
-      furnished = { $in: [false, true] };
+    if (req.query.type && req.query.type !== "all") {
+      query.type = req.query.type;
     }
 
-    let parking = req.query.parking;
-    if (parking === undefined || parking === "false") {
-      parking = { $in: [false, true] };
+    if (req.query.offer === "true") {
+      query.offer = true;
     }
 
-    let type = req.query.type;
-    if (type === undefined || type === "all") {
-      type = { $in: ["sale", "rent"] };
+    if (req.query.parking === "true") {
+      query.parking = true;
     }
 
-    const searchTerm = req.query.searchTerm || "";
-    const sort = req.query.sort || "createdAt";
-    const order = req.query.order === "asc" ? "asc" : "desc";
+    if (req.query.furnished === "true") {
+      query.furnished = true;
+    }
 
-    const listings = await Listing.find({
-      name: { $regex: searchTerm, $options: "i" },
-      offer,
-      furnished,
-      parking,
-      type,
-    })
-      .sort({ [sort]: order })
+    const allowedSortFields = ["createdAt", "regularPrice", "discountPrice"];
+    const sortField = allowedSortFields.includes(req.query.sort)
+      ? req.query.sort
+      : "createdAt";
+
+    const sortOrder = req.query.order === "asc" ? 1 : -1;
+
+    const listings = await Listing.find(query)
+      .sort({ [sortField]: sortOrder })
       .limit(limit)
       .skip(startIndex)
       .select("-__v")
