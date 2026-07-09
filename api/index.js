@@ -60,8 +60,33 @@ app.get("*", (req, res) => {
 });
 
 app.use((err, req, res, next) => {
-  const statusCode = err.statusCode || 500;
-  const message = err.message || "Internal Server Error";
+  let statusCode = err.statusCode || 500;
+  let message = err.message || "Internal Server Error";
+
+  if (err.name === "ValidationError") {
+    statusCode = 400;
+    message = Object.values(err.errors)
+      .map((error) => error.message)
+      .join(", ");
+  }
+
+  if (err.code === 11000) {
+    statusCode = 409;
+    const duplicatedField = Object.keys(err.keyValue || {})[0];
+    message = duplicatedField
+      ? `${duplicatedField} already exists`
+      : "Duplicate field value already exists";
+  }
+
+  if (err.name === "CastError") {
+    statusCode = 400;
+    message = "Invalid ID format";
+  }
+
+  if (err.name === "JsonWebTokenError") {
+    statusCode = 401;
+    message = "Invalid or expired token";
+  }
 
   return res.status(statusCode).json({
     success: false,
