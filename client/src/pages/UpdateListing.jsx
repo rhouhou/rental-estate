@@ -32,23 +32,22 @@ const UpdateListing = () => {
   const [loading, setLoading] = useState(false);
   const { currentUser } = useSelector((state) => state.user);
   const navigate = useNavigate();
-  const params = useParams();  
+  const params = useParams();
 
   useEffect(() => {
     const fetchListing = async () => {
-        const listingId = params.listingId;
-        const res = await fetch(`/api/listing/get/${listingId}`);
-        const data = await res.json();
+      const listingId = params.listingId;
+      const res = await fetch(`/api/listing/get/${listingId}`);
+      const data = await res.json();
 
-        if (data.success === false) {
-            console.log(data.message);
-            return;
-        }
-        setFormData(data);
+      if (data.success === false) {
+        console.log(data.message);
+        return;
+      }
+      setFormData(data);
     };
 
     fetchListing();
-
   }, []);
 
   const handleImageSubmit = (e) => {
@@ -100,7 +99,7 @@ const UpdateListing = () => {
           getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
             resolve(downloadURL);
           });
-        }
+        },
       );
     });
   };
@@ -384,7 +383,10 @@ const UpdateListing = () => {
               </div>
             ))}
           ;
-          <button disabled={loading || uploading} className="p-3 bg-slate-700 text-white rounded-lg uppercase hover:opacity-95 disabled:opacity-80">
+          <button
+            disabled={loading || uploading}
+            className="p-3 bg-slate-700 text-white rounded-lg uppercase hover:opacity-95 disabled:opacity-80"
+          >
             {loading ? "Updating..." : "Update Listing"}
           </button>
           {error && <p className="text-red-700 text-sm">{error}</p>}

@@ -10,7 +10,7 @@ const firebaseConfig = {
   projectId: "accounting-app-42de8",
   storageBucket: "accounting-app-42de8.firebasestorage.app",
   messagingSenderId: "280626680734",
-  appId: "1:280626680734:web:0702f6ed3a3e87d11d3c8f"
+  appId: "1:280626680734:web:0702f6ed3a3e87d11d3c8f",
 };
 
 // Initialize Firebase
