@@ -1,18 +1,21 @@
-# Rental Estate
+# Nestora
 
-Rental Estate is a full-stack MERN-style real estate application for browsing, creating, updating, and managing property listings. The app includes user authentication, protected user actions, listing management, and a React frontend built with Vite.
+Nestora is a full-stack real estate web application for browsing, creating, updating, and managing property listings. The app includes user authentication, protected routes, listing CRUD operations, image uploads, search filters, and a modern responsive frontend.
 
 ## Features
 
 * User signup and signin
-* Google authentication route support
+* Google sign-in with Firebase Authentication
 * JWT-based authentication with secure cookies
+* Protected profile, create listing, and update listing routes
 * Create, update, delete, and view property listings
-* View user-specific listings
-* Search and browse listings
-* React frontend with Vite
+* Upload listing and profile images with Cloudinary
+* Search listings by keyword, type, offer, parking, and furnished status
+* Sort listings by price or date
+* Contact listing owners by email
+* Responsive React frontend
 * Express and MongoDB backend
-* Protected API routes for authenticated user actions
+* Clean backend validation and error handling
 
 ## Tech Stack
 
@@ -20,8 +23,14 @@ Rental Estate is a full-stack MERN-style real estate application for browsing, c
 
 * React
 * Vite
-* JavaScript
-* CSS
+* React Router
+* Redux Toolkit
+* Redux Persist
+* Tailwind CSS
+* Swiper
+* React Icons
+* Firebase Authentication
+* Cloudinary uploads
 
 ### Backend
 
@@ -33,6 +42,9 @@ Rental Estate is a full-stack MERN-style real estate application for browsing, c
 * bcryptjs
 * cookie-parser
 * dotenv
+* helmet
+* express-rate-limit
+* cors
 
 ## Project Structure
 
@@ -46,10 +58,14 @@ rental-estate/
 │   └── index.js
 ├── client/
 │   ├── src/
+│   │   ├── components/
+│   │   ├── pages/
+│   │   ├── redux/
+│   │   └── utils/
+│   ├── .env.example
 │   ├── package.json
 │   └── vite.config.js
 ├── .env.example
-├── .gitignore
 ├── package.json
 └── README.md
 ```
@@ -78,22 +94,18 @@ GET    /api/user/:id
 ### Listings
 
 ```text
-POST /api/listing/create
-POST /api/listing/delete/:id
-POST /api/listing/update/:id
-GET  /api/listing/get/:id
-GET  /api/listing/get
+POST   /api/listing/create
+DELETE /api/listing/delete/:id
+POST   /api/listing/update/:id
+GET    /api/listing/get/:id
+GET    /api/listing/get
 ```
 
-## Getting Started
+### Health Check
 
-### Prerequisites
-
-Make sure you have installed:
-
-* Node.js
-* npm
-* MongoDB Atlas account or local MongoDB database
+```text
+GET /api/health
+```
 
 ## Environment Variables
 
@@ -103,11 +115,25 @@ Create a `.env` file in the root directory:
 MONGO=your_mongodb_connection_string
 JWT_SECRET=your_jwt_secret
 PORT=3000
+NODE_ENV=development
 ```
 
-An example file is included as `.env.example`.
+Create a `client/.env` file inside the `client` folder:
 
-> Do not commit your real `.env` file to GitHub.
+```env
+VITE_FIREBASE_API_KEY=your_firebase_api_key
+VITE_CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
+VITE_CLOUDINARY_UPLOAD_PRESET=your_cloudinary_unsigned_upload_preset
+```
+
+Example files are included:
+
+```text
+.env.example
+client/.env.example
+```
+
+Do not commit real `.env` files.
 
 ## Installation
 
@@ -127,12 +153,10 @@ npm install
 Install frontend dependencies:
 
 ```bash
-cd client
-npm install
-cd ..
+npm install --prefix client
 ```
 
-## Running the App Locally
+## Running Locally
 
 Start the backend server from the root directory:
 
@@ -146,7 +170,7 @@ The backend runs on:
 http://localhost:3000
 ```
 
-In a second terminal, start the frontend development server:
+Start the frontend development server:
 
 ```bash
 npm run dev:client
@@ -172,27 +196,55 @@ Start the production server:
 npm start
 ```
 
-The Express server serves the built frontend from:
+The Express server serves the production frontend from:
 
 ```text
 client/dist
 ```
 
+## Image Uploads
+
+Nestora uses Cloudinary for image uploads.
+
+Images are uploaded from the frontend using an unsigned Cloudinary upload preset. The returned Cloudinary image URLs are saved in MongoDB as part of each listing or user profile.
+
+Required client environment variables:
+
+```env
+VITE_CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
+VITE_CLOUDINARY_UPLOAD_PRESET=your_cloudinary_unsigned_upload_preset
+```
+
+## Google Sign-In
+
+Nestora uses Firebase Authentication for Google sign-in.
+
+Required client environment variable:
+
+```env
+VITE_FIREBASE_API_KEY=your_firebase_api_key
+```
+
+The Firebase config is stored in:
+
+```text
+client/src/firebase.js
+```
+
 ## Current Status
 
-Rental Estate is a portfolio project demonstrating a full-stack real estate application with authentication, protected user routes, listing CRUD operations, and a React frontend.
+Nestora is a portfolio project demonstrating a full-stack MERN-style real estate application with authentication, image uploads, protected routes, search, filtering, listing management, and responsive UI design.
 
-The project is currently in active cleanup and improvement. Planned improvements include stronger backend validation, clearer API error handling, improved documentation, deployment setup, screenshots, and frontend polish.
+The project has been cleaned and improved with stronger validation, clearer backend error handling, Cloudinary uploads, Firebase Google sign-in, and a more professional frontend design.
 
 ## Planned Improvements
 
-* Add API health check endpoint
-* Add clearer backend error handling
-* Validate required environment variables
-* Validate MongoDB ObjectIds on protected routes
-* Improve listing and user controller logic
-* Add frontend loading and error states
 * Add screenshots to the README
 * Add deployment instructions
-* Add security middleware
-* Add a changelog and license
+* Add backend tests
+* Add frontend form validation refinements
+* Add better loading skeletons
+* Add pagination metadata for listings
+* Add saved/favorite listings
+* Add map integration for listing locations
+* Add role-based admin features
