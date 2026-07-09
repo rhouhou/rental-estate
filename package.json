@@ -1,28 +1,35 @@
 {
-  "name": "brightcleanapp",
+  "name": "rental-estate",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "api/index.js",
   "type": "module",
   "scripts": {
     "dev": "nodemon api/index.js",
+    "dev:backend": "nodemon api/index.js",
+    "dev:client": "npm run dev --prefix client",
     "start": "node api/index.js",
     "build": "npm install && npm install --prefix client && npm run build --prefix client"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "real-estate",
+    "mern",
+    "react",
+    "nodejs",
+    "express",
+    "mongodb"
+  ],
+  "author": "Rola Houhou",
   "license": "ISC",
-  "description": "",
+  "description": "Full-stack rental real estate application with listings, authentication, and property management features.",
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "cookie-parser": "^1.4.7",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
     "jsonwebtoken": "^9.0.2",
-    "mongodb": "^6.10.0",
-    "mongoose": "^8.8.0",
-    "nodemon": "^3.1.7"
+    "mongoose": "^8.8.0"
   },
   "devDependencies": {
-    "vite": "^5.4.10"
+    "nodemon": "^3.1.7"
   }
 }
