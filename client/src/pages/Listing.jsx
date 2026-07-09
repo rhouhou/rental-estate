@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { Swiper, SwiperSlide } from "swiper/react";
 import SwiperCore from "swiper";
 import { Navigation } from "swiper/modules";
@@ -27,6 +27,33 @@ const Listing = () => {
   const [contact, setContact] = useState(false);
 
   const { currentUser } = useSelector((state) => state.user);
+
+  const navigate = useNavigate();
+
+const handleDeleteListing = async () => {
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this listing?"
+    );
+
+    if (!confirmDelete) return;
+
+    try {
+      const res = await fetch(`/api/listing/delete/${listing._id}`, {
+        method: "DELETE",
+      });
+
+      const data = await res.json();
+
+      if (data.success === false) {
+        console.error(data.message);
+        return;
+      }
+
+      navigate("/profile");
+    } catch (error) {
+      console.error(error.message);
+    }
+  };
 
   console.log(listing);
 
@@ -141,6 +168,24 @@ const Listing = () => {
                 {listing.furnished ? "Furnished" : "Unfurnished"}
               </li>
             </ul>
+
+            {currentUser && listing.userRef === currentUser._id && (
+              <div className="flex gap-4">
+                <Link
+                  to={`/update-listing/${listing._id}`}
+                  className="bg-green-700 text-white text-center p-3 rounded-lg uppercase hover:opacity-95 flex-1"
+                >
+                  Edit Listing
+                </Link>
+
+                <button
+                  onClick={handleDeleteListing}
+                  className="bg-red-700 text-white text-center p-3 rounded-lg uppercase hover:opacity-95 flex-1"
+                >
+                  Delete Listing
+                </button>
+              </div>
+            )}
 
             {currentUser && listing.userRef !== currentUser._id && !contact && (
               <button
