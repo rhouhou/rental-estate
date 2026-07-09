@@ -17,6 +17,28 @@ Nestora is a full-stack real estate web application for browsing, creating, upda
 * Express and MongoDB backend
 * Clean backend validation and error handling
 
+## Screenshots
+
+### Home Page
+
+![Home Page](docs/screenshots/home.png)
+
+### Search Page
+
+![Search Page](docs/screenshots/search.png)
+
+### Listing Details
+
+![Listing Details](docs/screenshots/listing.png)
+
+### Profile Page
+
+![Profile Page](docs/screenshots/profile.png)
+
+### Create Listing
+
+![Create Listing](docs/screenshots/create-listing.png)
+
 ## Tech Stack
 
 ### Frontend
