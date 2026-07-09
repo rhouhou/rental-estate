@@ -3,6 +3,9 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import path from "path";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
+import cors from "cors";
 
 import userRouter from "./routes/user.route.js";
 import authRouter from "./routes/auth.route.js";
@@ -10,19 +13,42 @@ import listingRouter from "./routes/listing.route.js";
 
 dotenv.config();
 
-if (!process.env.MONGO) {
-  throw new Error("MONGO environment variable is missing");
-}
+const requiredEnvVars = ["MONGO", "JWT_SECRET"];
 
-if (!process.env.JWT_SECRET) {
-  throw new Error("JWT_SECRET environment variable is missing");
-}
+requiredEnvVars.forEach((envVar) => {
+  if (!process.env[envVar]) {
+    throw new Error(`${envVar} environment variable is missing`);
+  }
+});
 
 const __dirname = path.resolve();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(express.json());
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 300,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+app.use(
+  helmet({
+    contentSecurityPolicy: false,
+  })
+);
+
+if (process.env.NODE_ENV !== "production") {
+  app.use(
+    cors({
+      origin: "http://localhost:5173",
+      credentials: true,
+    })
+  );
+}
+
+app.use(apiLimiter);
+app.use(express.json({ limit: "1mb" }));
 app.use(cookieParser());
 
 mongoose
@@ -30,14 +56,14 @@ mongoose
   .then(() => {
     console.log("Connected to MongoDB");
   })
-  .catch((err) => {
-    console.log("Error connecting to MongoDB:", err);
+  .catch((error) => {
+    console.error("Error connecting to MongoDB:", error.message);
   });
 
 app.get("/api/health", (req, res) => {
   res.status(200).json({
     status: "ok",
-    message: "Rental Estate API is running",
+    message: "Nestora API is running",
   });
 });
 
