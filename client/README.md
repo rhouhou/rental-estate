@@ -1,50 +1,123 @@
-# Rental Estate Client
+# Nestora Client
 
-This folder contains the React/Vite frontend for the Rental Estate application.
+This folder contains the React/Vite frontend for Nestora, a full-stack real estate web application for browsing, creating, updating, and managing property listings.
 
-The frontend provides the user interface for browsing listings, signing in, creating property listings, updating user profile information, and managing user-specific listings.
+## Features
 
-## Main Tools
+* Modern responsive UI
+* Home, About, Search, Listing, Profile, Sign In, and Sign Up pages
+* Protected frontend routes
+* User profile management
+* Listing creation and editing
+* Listing image uploads with Cloudinary
+* Google sign-in with Firebase Authentication
+* Global user state with Redux Toolkit and Redux Persist
+* Listing search, filtering, and sorting
+
+## Tech Stack
 
 * React
 * Vite
-* JavaScript
-* CSS
+* React Router
+* Redux Toolkit
+* Redux Persist
+* Tailwind CSS
+* Swiper
+* React Icons
+* Firebase Authentication
+* Cloudinary image uploads
 
-## Development
+## Environment Variables
 
-Install frontend dependencies:
+Create a `.env` file inside the `client` folder:
+
+```env
+VITE_FIREBASE_API_KEY=your_firebase_api_key
+VITE_CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
+VITE_CLOUDINARY_UPLOAD_PRESET=your_cloudinary_unsigned_upload_preset
+```
+
+Do not commit the real `.env` file.
+
+An example file is included:
+
+```text
+client/.env.example
+```
+
+## Installation
+
+From the project root:
+
+```bash
+npm install --prefix client
+```
+
+Or from inside the `client` folder:
 
 ```bash
 npm install
 ```
 
-Start the frontend development server:
+## Development
+
+From the project root:
+
+```bash
+npm run dev:client
+```
+
+Or from inside the `client` folder:
 
 ```bash
 npm run dev
 ```
 
-The frontend usually runs at:
+The frontend usually runs on:
 
 ```text
 http://localhost:5173
 ```
 
-During development, API requests are handled by the backend server running from the root project folder.
-
 ## Build
 
-Create a production build:
+From the project root:
 
 ```bash
 npm run build
 ```
 
-The production files are generated in:
+Or from inside the `client` folder:
 
-```text
-dist/
+```bash
+npm run build
 ```
 
-In production, the Express backend serves this build from the `client/dist` folder.
+The production build is generated in:
+
+```text
+client/dist
+```
+
+The backend serves this folder in production.
+
+## Main Frontend Folders
+
+```text
+src/
+├── components/
+├── pages/
+├── redux/
+├── utils/
+├── App.jsx
+├── firebase.js
+└── main.jsx
+```
+
+## Notes
+
+Cloudinary is used for profile and listing image uploads.
+
+Firebase is used only for Google sign-in.
+
+MongoDB and JWT authentication are handled by the backend API.
