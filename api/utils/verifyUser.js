@@ -3,10 +3,19 @@ import { errorHandler } from "./error.js";
 
 export const verifyToken = (req, res, next) => {
   const token = req.cookies.access_token;
-  if (!token) return next(errorHandler(401, "Unauthorized"));
 
-  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-    if (err) return next(errorHandler(403, "Forbidden"));
+  if (!token) {
+    return next(errorHandler(401, "You must be signed in"));
+  }
+
+  if (!process.env.JWT_SECRET) {
+    return next(errorHandler(500, "JWT secret is not configured"));
+  }
+
+  jwt.verify(token, process.env.JWT_SECRET, (error, user) => {
+    if (error) {
+      return next(errorHandler(401, "Invalid or expired token"));
+    }
 
     req.user = user;
     next();
