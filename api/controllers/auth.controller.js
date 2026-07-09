@@ -1,12 +1,28 @@
-import User from "../models/user.model.js";
 import bcryptjs from "bcryptjs";
-import { errorHandler } from "../utils/error.js";
 import jwt from "jsonwebtoken";
+import User from "../models/user.model.js";
+import { errorHandler } from "../utils/error.js";
 
 const cookieOptions = {
   httpOnly: true,
   sameSite: "strict",
   secure: process.env.NODE_ENV === "production",
+  maxAge: 7 * 24 * 60 * 60 * 1000,
+};
+
+const createToken = (userId) => {
+  if (!process.env.JWT_SECRET) {
+    throw new Error("JWT secret is not configured");
+  }
+
+  return jwt.sign({ id: userId }, process.env.JWT_SECRET, {
+    expiresIn: "7d",
+  });
+};
+
+const getPublicUser = (user) => {
+  const { password, ...rest } = user._doc;
+  return rest;
 };
 
 export const signup = async (req, res, next) => {
@@ -16,18 +32,23 @@ export const signup = async (req, res, next) => {
     return next(errorHandler(400, "Username, email, and password are required"));
   }
 
-  try {
-    const hashedPassword = bcryptjs.hashSync(password, 10);
+  if (password.length < 6) {
+    return next(errorHandler(400, "Password must be at least 6 characters"));
+  }
 
-    const newUser = new User({
+  try {
+    const hashedPassword = await bcryptjs.hash(password, 10);
+
+    const newUser = await User.create({
       username,
       email,
       password: hashedPassword,
     });
 
-    await newUser.save();
-
-    return res.status(201).json("User created successfully");
+    return res.status(201).json({
+      message: "User created successfully",
+      userId: newUser._id,
+    });
   } catch (error) {
     next(error);
   }
@@ -47,19 +68,19 @@ export const signin = async (req, res, next) => {
       return next(errorHandler(404, "User not found"));
     }
 
-    const validPassword = bcryptjs.compareSync(password, validUser.password);
+    const validPassword = await bcryptjs.compare(password, validUser.password);
 
     if (!validPassword) {
       return next(errorHandler(401, "Invalid credentials"));
     }
 
-    const token = jwt.sign({ id: validUser._id }, process.env.JWT_SECRET);
-    const { password: pass, ...rest } = validUser._doc;
+    const token = createToken(validUser._id);
+    const publicUser = getPublicUser(validUser);
 
     return res
       .cookie("access_token", token, cookieOptions)
       .status(200)
-      .json(rest);
+      .json(publicUser);
   } catch (error) {
     next(error);
   }
@@ -73,42 +94,42 @@ export const google = async (req, res, next) => {
   }
 
   try {
-    const user = await User.findOne({ email });
+    const existingUser = await User.findOne({ email });
 
-    if (user) {
-      const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
-      const { password, ...rest } = user._doc;
+    if (existingUser) {
+      const token = createToken(existingUser._id);
+      const publicUser = getPublicUser(existingUser);
 
       return res
         .cookie("access_token", token, cookieOptions)
         .status(200)
-        .json(rest);
+        .json(publicUser);
     }
 
     const generatedPassword =
       Math.random().toString(36).slice(-8) +
       Math.random().toString(36).slice(-8);
 
-    const hashedPassword = bcryptjs.hashSync(generatedPassword, 10);
+    const hashedPassword = await bcryptjs.hash(generatedPassword, 10);
 
-    const newUser = new User({
-      username:
-        name.split(" ").join("").toLowerCase() +
-        Math.random().toString(36).slice(-4),
+    const generatedUsername =
+      name.split(" ").join("").toLowerCase().replace(/[^a-z0-9]/g, "") +
+      Date.now().toString().slice(-6);
+
+    const newUser = await User.create({
+      username: generatedUsername,
       email,
       password: hashedPassword,
       avatar: photo,
     });
 
-    await newUser.save();
-
-    const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET);
-    const { password: pass, ...rest } = newUser._doc;
+    const token = createToken(newUser._id);
+    const publicUser = getPublicUser(newUser);
 
     return res
       .cookie("access_token", token, cookieOptions)
       .status(200)
-      .json(rest);
+      .json(publicUser);
   } catch (error) {
     next(error);
   }
@@ -119,7 +140,7 @@ export const signOut = async (req, res, next) => {
     return res
       .clearCookie("access_token", cookieOptions)
       .status(200)
-      .json("User has been logged out!");
+      .json("User has been logged out");
   } catch (error) {
     next(error);
   }
