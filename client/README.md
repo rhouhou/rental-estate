@@ -1,8 +1,50 @@
-# React + Vite
+# Rental Estate Client
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This folder contains the React/Vite frontend for the Rental Estate application.
 
-Currently, two official plugins are available:
+The frontend provides the user interface for browsing listings, signing in, creating property listings, updating user profile information, and managing user-specific listings.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Main Tools
+
+* React
+* Vite
+* JavaScript
+* CSS
+
+## Development
+
+Install frontend dependencies:
+
+```bash
+npm install
+```
+
+Start the frontend development server:
+
+```bash
+npm run dev
+```
+
+The frontend usually runs at:
+
+```text
+http://localhost:5173
+```
+
+During development, API requests are handled by the backend server running from the root project folder.
+
+## Build
+
+Create a production build:
+
+```bash
+npm run build
+```
+
+The production files are generated in:
+
+```text
+dist/
+```
+
+In production, the Express backend serves this build from the `client/dist` folder.
