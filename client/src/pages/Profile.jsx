@@ -1,13 +1,6 @@
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useRef, useState } from "react";
 import {
-  getDownloadURL,
-  getStorage,
-  ref,
-  uploadBytesResumable,
-} from "firebase/storage";
-import { app } from "../firebase";
-import {
   updateUserStart,
   updateUserSuccess,
   updateUserFailure,
@@ -19,6 +12,7 @@ import {
   signOutUserFailure,
 } from "../redux/user/userSlice.js";
 import { Link } from "react-router-dom";
+import { uploadToCloudinary } from "../utils/uploadToCloudinary";
 
 const Profile = () => {
   const fileRef = useRef(null);
@@ -43,34 +37,28 @@ const Profile = () => {
     }
   }, [file]);
 
-  const handleFileUpload = (file) => {
-    const storage = getStorage(app);
+ const handleFileUpload = async (file) => {
+  try {
+      setFileUploadError(false);
+      setFilePerc(10);
 
-    const fileName = new Date().getTime() + file.name;
-    const storageRef = ref(storage, fileName);
+      const imageUrl = await uploadToCloudinary(file);
 
-    const uploadTask = uploadBytesResumable(storageRef, file);
+      setFormData((prev) => ({
+        ...prev,
+        avatar: imageUrl,
+      }));
 
-    uploadTask.on(
-      "state_changed",
-      (snapshot) => {
-        const progress =
-          (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        setFilePerc(Math.round(progress));
-      },
-      (error) => {
-        setFileUploadError(error);
-      },
-      () => {
-        getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-          setFormData({ ...FormData, avatar: downloadURL });
-        });
-      },
-    );
+      setFilePerc(100);
+    } catch (error) {
+      console.error("Profile image upload error:", error);
+      setFileUploadError(error.message || "Image upload failed");
+      setFilePerc(0);
+    }
   };
 
   const handleChange = (e) => {
-    setFormData({ ...FormData, [e.target.id]: e.target.value });
+    setFormData({ ...formData, [e.target.id]: e.target.value });
   };
 
   const handleSubmit = async (e) => {
