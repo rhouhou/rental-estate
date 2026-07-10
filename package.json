@@ -8,7 +8,7 @@
     "dev:backend": "nodemon api/index.js",
     "dev:client": "npm run dev --prefix client",
     "start": "node api/index.js",
-    "build": "npm install && npm install --prefix client && npm run build --prefix client"
+    "build": "npm install --include=dev --prefix client && npm run build --prefix client"
   },
   "keywords": [
     "real-estate",
@@ -19,16 +19,16 @@
     "mongodb"
   ],
   "author": "Rola Houhou",
-  "license": "ISC",
-  "description": "Full-stack rental real estate application with listings, authentication, and property management features.",
+  "license": "MIT",
+  "description": "Full-stack real estate application with listings, authentication, and property management features.",
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "cookie-parser": "^1.4.7",
-    "cors": "^2.8.6",
+    "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
-    "express-rate-limit": "^8.5.2",
-    "helmet": "^8.2.0",
+    "express-rate-limit": "^7.5.0",
+    "helmet": "^8.0.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.8.0"
   },
